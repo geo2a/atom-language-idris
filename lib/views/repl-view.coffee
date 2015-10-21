@@ -2,6 +2,26 @@ Cycle = require '@cycle/core'
 CycleDOM = require '@cycle/dom'
 highlighter = require '../utils/highlighter'
 
+fontOptions = () ->
+  fontSize = atom.config.get 'language-idris.panelFontSize'
+  fontSizeAttr = "#{fontSize}px"
+  enableLigatures = atom.config.get 'language-idris.panelFontLigatures'
+  webkitFontFeatureSettings =
+    if enableLigatures
+      '"liga"'
+    else
+      '"inherit"'
+
+  fontFamily = atom.config.get 'language-idris.panelFontFamily'
+  if fontFamily != ''
+    fontFamily
+  else
+    '"inherit"'
+
+  'font-size': fontSizeAttr
+  '-webkit-font-feature-settings': webkitFontFeatureSettings
+  'font-family': fontFamily
+
 REPLCycle =
   # highlight : forall a.
   #   { code : String, highlightInformation : HighlightInformation } ->
@@ -12,13 +32,27 @@ REPLCycle =
 
   # view : Observable State -> Observable CycleDOM
   view: (state$) ->
+    styles = fontOptions()
+
     state$.map (lines) ->
       lines = lines.map (line) ->
         highlightedCode = REPLCycle.highlight line
-        CycleDOM.h 'div', { className: 'idris-repl-line' },
+        CycleDOM.h 'div',
+          {
+            className: 'idris-repl-line'
+            style: styles
+          },
           [
-            CycleDOM.h 'div', { className: 'idris-repl-input' }, line.input
-            CycleDOM.h 'div', { className: 'idris-repl-output' }, highlightedCode
+            CycleDOM.h 'div', { className: 'idris-repl-input' },
+              [
+                CycleDOM.h 'span', { className: 'idris-repl-input-prompt' }, '> '
+                line.input
+              ]
+            CycleDOM.h 'div', { className: 'idris-repl-output' },
+              [
+                CycleDOM.h 'span', { className: 'idris-repl-output-prompt' }, '< '
+                highlightedCode
+              ]
           ]
 
       CycleDOM.h 'div',
@@ -61,7 +95,6 @@ REPLCycle =
 class REPLView
   constructor: (params) ->
     hostElement = document.createElement 'div'
-    hostElement.className = "blu"
     @[0] = hostElement
 
     model = params.controller.model
