@@ -48,9 +48,12 @@ REPLCycle =
                 CycleDOM.h 'span', { className: 'idris-repl-input-prompt' }, '> '
                 line.input
               ]
-            CycleDOM.h 'div', { className: 'idris-repl-output' },
+            CycleDOM.h 'pre',
+              {
+                className: 'idris-repl-output'
+                style: styles
+              },
               [
-                CycleDOM.h 'span', { className: 'idris-repl-output-prompt' }, '< '
                 highlightedCode
               ]
           ]
